@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>有些话想说给你听</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #f7f5f0;
+      color: #222;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft YaHei",
+        sans-serif;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .book {
+      width: min(900px, 90vw);
+      min-height: 600px;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+      padding: 60px;
+    }
+
+    .page-number {
+      font-size: 14px;
+      letter-spacing: 3px;
+      color: #999;
+      margin-bottom: 50px;
+    }
+
+    .title {
+      font-size: 26px;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+
+    .content {
+      max-width: 700px;
+      font-size: 20px;
+      line-height: 2;
+      white-space: pre-wrap;
+    }
+
+    .navigation {
+      margin-top: 60px;
+      display: flex;
+      gap: 30px;
+    }
+
+    button {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 24px;
+      padding: 10px 20px;
+    }
+
+    button:disabled {
+      opacity: 0.2;
+      cursor: default;
+    }
+
+    .loading {
+      color: #999;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="book">
+
+    <div id="loading" class="loading">
+      正在打开……
+    </div>
+
+    <div id="page" style="display:none;">
+
+      <div id="pageNumber" class="page-number"></div>
+
+      <div id="title" class="title"></div>
+
+      <div id="content" class="content"></div>
+
+      <div class="navigation">
+        <button id="prev">←</button>
+        <button id="next">→</button>
+      </div>
+
+    </div>
+
+  </main>
+
+<script>
+
+let pages = [];
+let currentPage = 0;
+
+async function loadPages() {
+
+  try {
+
+    const response = await fetch('/api/pages');
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error);
+    }
+
+    pages = data.pages;
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('page').style.display = 'block';
+
+    renderPage();
+
+  } catch (error) {
+
+    document.getElementById('loading').textContent =
+      '页面加载失败：' + error.message;
+
+  }
+
+}
+
+function renderPage() {
+
+  if (!pages.length) {
+    document.getElementById('content').textContent =
+      '这里还没有内容。';
+    return;
+  }
+
+  const page = pages[currentPage];
+
+  document.getElementById('pageNumber').textContent =
+    String(currentPage + 1).padStart(2, '0')
+    + ' / '
+    + String(pages.length).padStart(2, '0');
+
+  document.getElementById('title').textContent =
+    page.title || '';
+
+  document.getElementById('content').textContent =
+    page.content || '';
+
+  document.getElementById('prev').disabled =
+    currentPage === 0;
+
+  document.getElementById('next').disabled =
+    currentPage === pages.length - 1;
+}
+
+document.getElementById('prev').onclick = () => {
+
+  if (currentPage > 0) {
+    currentPage--;
+    renderPage();
+  }
+
+};
+
+document.getElementById('next').onclick = () => {
+
+  if (currentPage < pages.length - 1) {
+    currentPage++;
+    renderPage();
+  }
+
+};
+
+loadPages();
+
+</script>
+
+</body>
+</html>
