@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>留言册后台</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+
+  margin: 0;
+
+  background: #f5f5f3;
+
+  color: #222;
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Microsoft YaHei",
+    sans-serif;
+}
+
+
+/* =====================
+   登录
+===================== */
+
+.login {
+
+  min-height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.login-box {
+
+  width: 360px;
+
+  background: white;
+
+  padding: 45px;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,.08);
+}
+
+.login-box h1 {
+
+  margin-top: 0;
+
+  margin-bottom: 30px;
+
+  font-size: 24px;
+
+  font-weight: 500;
+}
+
+input,
+textarea,
+select {
+
+  width: 100%;
+
+  padding: 12px 14px;
+
+  border: 1px solid #ddd;
+
+  border-radius: 8px;
+
+  font-size: 15px;
+
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+
+  border-color: #999;
+}
+
+button {
+
+  border: none;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+
+  padding: 10px 18px;
+
+  font-size: 14px;
+}
+
+.primary {
+
+  background: #222;
+
+  color: white;
+}
+
+.danger {
+
+  background: #fff0f0;
+
+  color: #c33;
+}
+
+.login button {
+
+  width: 100%;
+
+  margin-top: 20px;
+}
+
+.error {
+
+  color: #c33;
+
+  margin-top: 15px;
+
+  font-size: 14px;
+}
+
+
+/* =====================
+   后台
+===================== */
+
+.admin {
+
+  display: none;
+
+  max-width: 1100px;
+
+  margin: auto;
+
+  padding: 50px 25px;
+}
+
+.header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 35px;
+}
+
+.header h1 {
+
+  margin: 0;
+
+  font-weight: 500;
+}
+
+.pages {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.page-item {
+
+  background: white;
+
+  padding: 20px 24px;
+
+  border-radius: 12px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+.page-info {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+}
+
+.number {
+
+  color: #999;
+
+  font-size: 14px;
+}
+
+.page-title {
+
+  font-size: 16px;
+}
+
+.status {
+
+  font-size: 12px;
+
+  padding: 5px 9px;
+
+  border-radius: 20px;
+
+  background: #eee;
+}
+
+.status.published {
+
+  background: #e8f5e9;
+
+  color: #287a36;
+}
+
+.actions {
+
+  display: flex;
+
+  gap: 8px;
+}
+
+
+/* =====================
+   编辑器
+===================== */
+
+.editor {
+
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0,0,0,.35);
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 20px;
+}
+
+.editor-box {
+
+  width: min(700px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 35px;
+}
+
+.editor-box h2 {
+
+  margin-top: 0;
+
+  font-weight: 500;
+}
+
+.form-group {
+
+  margin-bottom: 20px;
+}
+
+.form-group label {
+
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+
+  color: #555;
+}
+
+textarea {
+
+  min-height: 260px;
+
+  resize: vertical;
+
+  line-height: 1.8;
+}
+
+.editor-actions {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 25px;
+}
+
+.empty {
+
+  text-align: center;
+
+  color: #999;
+
+  padding: 80px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================
+     登录页面
+===================== -->
+
+<section
+  id="login"
+  class="login"
+>
+
+  <div class="login-box">
+
+    <h1>留言册后台</h1>
+
+    <input
+      id="password"
+      type="password"
+      placeholder="请输入管理员密码"
+    >
+
+    <button
+      class="primary"
+      onclick="login()"
+    >
+      进入后台
+    </button>
+
+    <div
+      id="loginError"
+      class="error"
+    ></div>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================
+     管理后台
+===================== -->
+
+<section
+  id="admin"
+  class="admin"
+>
+
+  <div class="header">
+
+    <h1>我的留言册</h1>
+
+    <button
+      class="primary"
+      onclick="newPage()"
+    >
+      ＋ 新增页面
+    </button>
+
+  </div>
+
+  <div
+    id="pages"
+    class="pages"
+  ></div>
+
+</section>
+
+
+
+<!-- =====================
+     编辑窗口
+===================== -->
+
+<div
+  id="editor"
+  class="editor"
+>
+
+  <div class="editor-box">
+
+    <h2 id="editorTitle">
+      新增页面
+    </h2>
+
+
+    <div class="form-group">
+
+      <label>
+        页面标题
+      </label>
+
+      <input
+        id="title"
+        placeholder="例如：第一次见面"
+      >
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        页面内容
+      </label>
+
+      <textarea
+        id="content"
+        placeholder="写下你想说的话……"
+      ></textarea>
+
+    </div>
+
+
+    <div class="form-group">
+
+      <label>
+        页面状态
+      </label>
+
+      <select id="status">
+
+        <option value="draft">
+          草稿
+        </option>
+
+        <option value="published">
+          已发布
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div class="editor-actions">
+
+      <button
+        onclick="closeEditor()"
+      >
+        取消
+      </button>
+
+      <button
+        class="primary"
+        onclick="savePage()"
+      >
+        保存
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+let adminPassword = '';
+
+let editingId = null;
+
+let pages = [];
+
+
+// =====================
+// 登录
+// =====================
+
+async function login() {
+
+  const password =
+    document.getElementById('password').value;
+
+  if (!password) {
+
+    document.getElementById('loginError').textContent =
+      '请输入密码';
+
+    return;
+
+  }
+
+
+  const response =
+    await fetch('/api/login', {
+
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+        password
+      })
+
+    });
+
+
+  const data =
+    await response.json();
+
+
+  if (!data.success) {
+
+    document.getElementById('loginError').textContent =
+      data.error;
+
+    return;
+
+  }
+
+
+  adminPassword = password;
+
+
+  document.getElementById('login').style.display =
+    'none';
+
+  document.getElementById('admin').style.display =
+    'block';
+
+
+  loadPages();
+
+}
+
+
+// =====================
+// 获取页面
+// =====================
+
+async function loadPages() {
+
+  const response =
+    await fetch('/api/admin/pages', {
+
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+        password: adminPassword
+      })
+
+    });
+
+
+  const data =
+    await response.json();
+
+
+  if (!data.success) {
+
+    alert(data.error);
+
+    return;
+
+  }
+
+
+  pages = data.pages;
+
+  renderPages();
+
+}
+
+
+// =====================
+// 显示页面
+// =====================
+
+function renderPages() {
+
+  const container =
+    document.getElementById('pages');
+
+
+  if (!pages.length) {
+
+    container.innerHTML =
+      '<div class="empty">还没有页面</div>';
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    pages.map((page, index) => `
+
+      <div class="page-item">
+
+        <div class="page-info">
+
+          <div class="number">
+            ${String(index + 1).padStart(2, '0')}
+          </div>
+
+          <div class="page-title">
+            ${escapeHtml(page.title)}
+          </div>
+
+          <div class="status ${page.status}">
+            ${
+              page.status === 'published'
+                ? '已发布'
+                : '草稿'
+            }
+          </div>
+
+        </div>
+
+
+        <div class="actions">
+
+          <button
+            onclick="editPage(${page.id})"
+          >
+            编辑
+          </button>
+
+          <button
+            class="danger"
+            onclick="deletePage(${page.id})"
+          >
+            删除
+          </button>
+
+        </div>
+
+      </div>
+
+    `).join('');
+
+}
+
+
+// =====================
+// 新增页面
+// =====================
+
+function newPage() {
+
+  editingId = null;
+
+  document.getElementById('editorTitle').textContent =
+    '新增页面';
+
+  document.getElementById('title').value =
+    '';
+
+  document.getElementById('content').value =
+    '';
+
+  document.getElementById('status').value =
+    'draft';
+
+  document.getElementById('editor').style.display =
+    'flex';
+
+}
+
+
+// =====================
+// 编辑页面
+// =====================
+
+function editPage(id) {
+
+  const page =
+    pages.find(p => p.id === id);
+
+  if (!page) return;
+
+
+  editingId = id;
+
+
+  document.getElementById('editorTitle').textContent =
+    '编辑页面';
+
+
+  document.getElementById('title').value =
+    page.title || '';
+
+
+  document.getElementById('content').value =
+    page.content || '';
+
+
+  document.getElementById('status').value =
+    page.status || 'draft';
+
+
+  document.getElementById('editor').style.display =
+    'flex';
+
+}
+
+
+// =====================
+// 保存
+// =====================
+
+async function savePage() {
+
+  const title =
+    document.getElementById('title').value.trim();
+
+  const content =
+    document.getElementById('content').value.trim();
+
+  const status =
+    document.getElementById('status').value;
+
+
+  if (!title || !content) {
+
+    alert('标题和内容不能为空');
+
+    return;
+
+  }
+
+
+  let url;
+  let method;
+
+
+  if (editingId) {
+
+    url =
+      `/api/admin/page/${editingId}`;
+
+    method =
+      'PUT';
+
+  } else {
+
+    url =
+      '/api/admin/page/create';
+
+    method =
+      'POST';
+
+  }
+
+
+  const response =
+    await fetch(url, {
+
+      method,
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify({
+
+        password: adminPassword,
+
+        title,
+
+        content,
+
+        status
+
+      })
+
+    });
+
+
+  const data =
+    await response.json();
+
+
+  if (!data.success) {
+
+    alert(data.error);
+
+    return;
+
+  }
+
+
+  closeEditor();
+
+  loadPages();
+
+}
+
+
+// =====================
+// 删除
+// =====================
+
+async function deletePage(id) {
+
+  const page =
+    pages.find(p => p.id === id);
+
+
+  if (!confirm(
+    `确定要删除「${page.title}」吗？`
+  )) {
+    return;
+  }
+
+
+  const response =
+    await fetch(
+      `/api/admin/page/${id}`,
+      {
+
+        method: 'DELETE',
+
+        headers: {
+          'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify({
+          password: adminPassword
+        })
+
+      }
+    );
+
+
+  const data =
+    await response.json();
+
+
+  if (!data.success) {
+
+    alert(data.error);
+
+    return;
+
+  }
+
+
+  loadPages();
+
+}
+
+
+// =====================
+// 关闭编辑器
+// =====================
+
+function closeEditor() {
+
+  document.getElementById('editor').style.display =
+    'none';
+
+}
+
+
+// =====================
+// HTML转义
+// =====================
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement('div');
+
+  div.textContent =
+    text;
+
+  return div.innerHTML;
+
+}
+
+</script>
+
+
+</body>
+
+</html>
